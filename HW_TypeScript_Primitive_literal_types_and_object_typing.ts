@@ -74,7 +74,7 @@ class Level {
     this._description = description;
   }
 
-  addGroup(group: Group) {
+  addGroup(group: Group): void {
     this._groups.push(group);
   }
 
@@ -171,7 +171,7 @@ class Student {
   }
 
   getPerformanceRating(): number {
-    const gradeValues = Object.values(this._grades);
+    const gradeValues = Object.keys(this._grades).map(key => this._grades[key]);
 
     if (!gradeValues.length) return 0;
 
@@ -181,14 +181,14 @@ class Student {
     return (averageGrade + attendancePercentage) / 2;
   }
 
-  setGrade(workName: string, mark: number) {
+  setGrade(workName: string, mark: number): void {
     if (mark < 0 || mark > 100) {
       throw new Error('The mark should be in the range from 0 to 100');
     }
     this._grades[workName] = mark;
   }
 
-  setVisit(lesson: string, present: boolean) {
+  setVisit(lesson: string, present: boolean): void {
     this._visits[lesson] = present;
   }
 }
