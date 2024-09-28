@@ -8,6 +8,8 @@ abstract class Shape {
     }
 
     abstract calculateArea(): number;
+
+    abstract print(): string;
 }
 
 class Circle extends Shape {
@@ -20,6 +22,10 @@ class Circle extends Shape {
 
     calculateArea(): number {
         return Math.PI * this.radius ** 2;
+    }
+
+    print(): string {
+        return `Area = π * radius² = π * ${this.radius}²`;
     }
 }
 
@@ -64,5 +70,9 @@ class Triangle extends Shape {
 
     calculateArea(): number {
         return 0.5 * this.base * this.height;
+    }
+
+    print(): string {
+        return `Area = 0.5 * base * height = 0.5 * ${this.base} * ${this.height}`;
     }
 }
