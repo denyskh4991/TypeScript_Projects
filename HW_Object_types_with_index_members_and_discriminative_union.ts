@@ -26,13 +26,12 @@ interface DynamicProperties {
 // 5. Interfaces with an index signature and extension
 
 interface BasicIndex {
-    [key: string]: number;
+    [key: string]: string | number;
 }
 
-interface ExtendedIndex {
+interface ExtendedIndex extends BasicIndex {
     name: string;
     age: number;
-    [key: string]: number | string;
 }
 
 // 6. Function that checks if all values in the object are numbers
