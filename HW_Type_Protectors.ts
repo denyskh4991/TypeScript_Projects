@@ -1,4 +1,8 @@
-type EmployeeStatus = 'active' | 'inactive' | 'unpaid_leave';
+enum EmployeeStatus {
+    Active = 'active',
+    Inactive = 'inactive',
+    UnpaidLeave = 'unpaid_leave',
+}
 
 interface PreHiredEmployee {
     firstName: string;
@@ -25,9 +29,75 @@ interface Department {
     budget: Budget;
 
     calculateBalance(): number;
-    addEmployee(employee: Employee): void;
+    addEmployee(employee: Employee | PreHiredEmployee): void;
     removeEmployee(employee: Employee): void;
     promoteToEmployee(preHired: PreHiredEmployee): Employee;
+}
+
+class BaseDepartment implements Department {
+    name: string;
+    domain: string;
+    employees: Employee[];
+    budget: Budget;
+
+    constructor(name: string, domain: string, budget: Budget) {
+        this.name = name;
+        this.domain = domain;
+        this.employees = [];
+        this.budget = budget;
+    }
+
+    calculateBalance(): number {
+        return this.budget.credit - this.budget.debit;
+    }
+
+    addEmployee(employee: Employee | PreHiredEmployee): void {
+        if ('status' in employee) {
+            this.employees.push(employee);
+            this.updateBalanceForEmployee(employee);
+        } else {
+            const newEmployee = this.promoteToEmployee(employee);
+            this.employees.push(newEmployee);
+            this.updateBalanceForEmployee(newEmployee);
+        }
+    }
+
+    removeEmployee(employee: Employee): void {
+        this.employees = this.employees.filter(emp => emp !== employee);
+    }
+
+    promoteToEmployee(preHired: PreHiredEmployee): Employee {
+        const newEmployee: Employee = {
+            ...preHired,
+            paymentInfo: 'internal',
+            status: EmployeeStatus.Active,
+            department: this,
+        };
+        return newEmployee;
+    }
+
+    updateBalanceForEmployee(employee: Employee): void {
+        if (employee.status === EmployeeStatus.Active) {
+            this.budget.debit += employee.salary;
+        }
+    }
+}
+
+class AccountingDepartment extends BaseDepartment {
+    balance: number;
+
+    constructor(name: string, domain: string, budget: Budget) {
+        super(name, domain, budget);
+        this.balance = this.calculateBalance();
+    }
+
+    paySalaries(): void {
+        this.employees
+            .filter(employee => employee.status === EmployeeStatus.Active)
+            .forEach(employee => {
+                this.budget.debit += employee.salary;
+            });
+    }
 }
 
 class Company {
@@ -41,59 +111,5 @@ class Company {
         this.departments = departments;
         this.preHiredEmployees = preHiredEmployees;
         this.allEmployees = [].concat(...departments.map(d => d.employees), preHiredEmployees);
-    }
-}
-
-class Accounting implements Department {
-    name: string;
-    domain: string;
-    employees: Employee[];
-    budget: Budget;
-    balance: number;
-
-    constructor(name: string, domain: string, budget: Budget) {
-        this.name = name;
-        this.domain = domain;
-        this.employees = [];
-        this.budget = budget;
-        this.balance = this.calculateBalance();
-    }
-
-    calculateBalance(): number {
-        return this.budget.credit - this.budget.debit;
-    }
-
-    addEmployee(employee: Employee): void {
-        this.employees.push(employee);
-        this.updateBalanceForEmployee(employee);
-    }
-
-    removeEmployee(employee: Employee): void {
-        this.employees = this.employees.filter(emp => emp !== employee);
-    }
-
-    promoteToEmployee(preHired: PreHiredEmployee): Employee {
-        const newEmployee: Employee = {
-            ...preHired,
-            paymentInfo: 'internal',
-            status: 'active',
-            department: this,
-        };
-        this.addEmployee(newEmployee);
-        return newEmployee;
-    }
-
-    updateBalanceForEmployee(employee: Employee): void {
-        if (employee.status === 'active') {
-            this.budget.debit += employee.salary;
-        }
-    }
-
-    paySalaries(): void {
-        this.employees
-            .filter(employee => employee.status === 'active')
-            .forEach(employee => {
-                this.budget.debit += employee.salary;
-            });
     }
 }
