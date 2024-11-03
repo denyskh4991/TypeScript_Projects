@@ -32,14 +32,6 @@ abstract class Note {
     }
 }
 
-class DefaultNote extends Note {
-    editContent(newContent: string): void {
-        if (!newContent) throw new Error("Content cannot be empty.");
-        this.content = newContent;
-        this.updateTimestamp();
-    }
-}
-
 class ConfirmableNote extends Note {
     editContent(newContent: string): void {
         if (confirm("Are you sure you want to edit this note?")) {
@@ -50,9 +42,17 @@ class ConfirmableNote extends Note {
     }
 }
 
+class DefaultNote extends Note {
+    editContent(newContent: string): void {
+        if (!newContent) throw new Error("Content cannot be empty.");
+        this.content = newContent;
+        this.updateTimestamp();
+    }
+}
+
 class TodoList {
-    private notes: Note[] = [];
-    private nextId = 1;
+    protected notes: Note[] = [];
+    protected nextId = 1;
 
     addNote(title: string, content: string, confirmable: boolean = false): void {
         const note = confirmable
@@ -90,15 +90,22 @@ class TodoList {
     getPendingNotesCount(): number {
         return this.notes.filter(note => note.status === Status.Pending).length;
     }
+}
 
-    searchNotes(query: string): Note[] {
+class SearchableTodoList extends TodoList {
+    // Метод для пошуку за назвою
+    searchByTitle(query: string): Note[] {
         const lowerQuery = query.toLowerCase();
-        return this.notes.filter(note =>
-            new RegExp(lowerQuery).test(note.title.toLowerCase()) ||
-            new RegExp(lowerQuery).test(note.content.toLowerCase())
-        );
+        return this.notes.filter(note => new RegExp(lowerQuery).test(note.title.toLowerCase()));
     }
 
+    searchByContent(query: string): Note[] {
+        const lowerQuery = query.toLowerCase();
+        return this.notes.filter(note => new RegExp(lowerQuery).test(note.content.toLowerCase()));
+    }
+}
+
+class SortableTodoList extends TodoList {
     sortNotesByStatus(): Note[] {
         return [...this.notes].sort((a, b) => a.status.localeCompare(b.status));
     }
